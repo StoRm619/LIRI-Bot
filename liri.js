@@ -4,24 +4,35 @@ var Spotify = require('node-spotify-api');
 const axios = require('axios');
 //needed to use momentjs
 var moment = require('moment');
+//needed to use fs package
+var fs = require("fs");
+
+require("dotenv").config();
+var keys = require("./keys.js");
+
 //get user input and chose of npm
 var npmChoice = process.argv[2];
 var userInput = process.argv.slice(3).join(" ");
 
-switch (npmChoice) {
-    case "spotify-this-song":
-        spotify();
-        break;
-    case "movie-this":
-        movie();
-        break;
-    case "concert-this":
-        concert();
-        break;
-    default:
-        console.log("this is default");
 
-}
+function fsRead() {
+    fs.readFile("random.txt", "utf8", function(error, data) {
+
+
+        // If the code experiences any errors it will log the error to the console.
+        if (error) {
+            return console.log(error);
+        }
+
+        // Then split it by commas (to make it more readable)
+        var dataArr = data.split(",");
+        userInput = dataArr[1];
+        spotifyThis();
+
+    });
+
+
+};
 
 function concert() {
     axios.get("https://rest.bandsintown.com/artists/" + userInput + "/events?app_id=codingbootcamp").then(
@@ -89,11 +100,8 @@ function movie() {
 };
 
 
-function spotify() {
-    var spotify = new Spotify({
-        id: "88bd5d945750457695918e93b5ae3119",
-        secret: "f3573810ce614fdba1dc491118a63073"
-    });
+function spotifyThis() {
+    var spotify = new Spotify(keys.spotify);
     spotify.search({ type: 'track', query: userInput }, function(err, data) {
         if (err) {
             return console.log('Error occurred: ' + err);
@@ -109,3 +117,20 @@ function spotify() {
     });
 
 };
+switch (npmChoice) {
+    case "spotify-this-song":
+        spotifyThis();
+        break;
+    case "movie-this":
+        movie();
+        break;
+    case "concert-this":
+        concert();
+        break;
+    case "do-what-it-says":
+        fsRead();
+        break;
+    default:
+        console.log("this is default");
+
+}
